@@ -1,6 +1,7 @@
 from modules.assistant import assistente_inteligente
 from database.connection import criar_tabela
 
+
 class NexoraAI:
 
     def __init__(self, nome, versao):

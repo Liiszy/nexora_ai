@@ -1,8 +1,14 @@
 
 import requests
-from database.connection import salvar_conversa
-from database.connection import criar_tabela
-from database.connection import buscar_conversas
+from database.connection import salvar_memoria
+
+from database.connection import (
+    salvar_conversa,
+    criar_tabela,
+    buscar_conversas,
+    buscar_memoria
+)
+
 
 def assistente_inteligente():
 
@@ -12,10 +18,16 @@ def assistente_inteligente():
     historico = []
 
     conversas_anteriores = buscar_conversas()
+    nome = buscar_memoria("nome")
 
     for pergunta_antiga, resposta_antiga in conversas_anteriores:
         historico.append(f"Usuário: {pergunta_antiga}")
         historico.append(f"Nexora: {resposta_antiga}")
+
+    if nome:
+        historico.append(
+            f"Informação importante: o nome do usuário é {nome}."
+        )
 
     while True:
 
@@ -24,8 +36,17 @@ def assistente_inteligente():
         if pergunta.lower() == "sair":
             print("Nexora: Até a próxima!")
             break
+        if pergunta.lower().startswith("meu nome é "):
+             nome = pergunta[11:].strip().rstrip(".!?")
+
+        if nome:
+            salvar_memoria("nome", nome)
+            historico.append(
+                f"Informação importante: o nome do usuário é {nome}."
+        )
 
         historico.append(f"Usuário: {pergunta}")
+        historico = historico[-20:]
 
         contexto = "\n".join(historico)
 
@@ -55,9 +76,9 @@ def assistente_inteligente():
             print(f"\nNexora: {texto}\n")
 
             historico.append(f"Nexora: {texto}")
+            historico = historico[-20:]
 
             salvar_conversa(pergunta, texto)
 
         except requests.exceptions.RequestException as erro:
             print(f"\nErro na comunicação com a IA: {erro}")
-
